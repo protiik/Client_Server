@@ -1,0 +1,145 @@
+//
+//  FriendsRequest.swift
+//  loginForm
+//
+//  Created by prot on 17.03.2020.
+//  Copyright © 2020 prot. All rights reserved.
+//
+
+import Foundation
+import Alamofire
+import SwiftyJSON
+
+struct FriendsVK {
+    var id = Int()
+    var fisrtName = String()
+    var lastName = String()
+    var photo = String()
+    var photoFull = String()
+}
+
+protocol FriendsServiceRequest {
+    func loadData (completion: @escaping ([FriendsVK]) -> Void)
+}
+
+protocol FriendsParser {
+    func parse (data: Data) -> [FriendsVK]
+}
+
+class SwiftyJSONParserFriends: FriendsParser {
+    func parse(data: Data) -> [FriendsVK] {
+        do{
+            let json = try JSON(data:data)
+            let response = json["response"]
+            let items = response["items"].arrayValue
+            
+            let result = items.map{item -> FriendsVK in
+                var friends = FriendsVK()
+                friends.id = item["id"].intValue
+                friends.fisrtName = item["first_name"].stringValue
+                friends.lastName = item["last_name"].stringValue
+                friends.photo = item["photo_50"].stringValue
+                friends.photoFull = item["photo_100"].stringValue
+                
+                return friends
+            }
+            return result
+        }catch{
+            print(error.localizedDescription)
+            return []
+        }
+    }
+}
+
+class FriendRequest: FriendsServiceRequest {
+    
+    let parser: FriendsParser
+    
+    init (parser: FriendsParser) {
+        self.parser = parser
+    }
+    
+    func loadData(completion: @escaping ([FriendsVK]) -> Void) {
+        let baseURL = "https://api.vk.com/method"
+        let apiKey = Session.shared.token
+        
+        let path = "/friends.get"
+        let url = baseURL + path
+        
+        let parameters: Parameters = [
+            "fields": "name, photo_50, photo_100",
+            "v": "5.52",
+            "access_token": apiKey
+        ]
+        
+        Alamofire.request(url, method: .get, parameters: parameters).responseJSON { [completion] (response) in
+            guard let data = response.data else { return }
+            
+            let friends: [FriendsVK] = self.parser.parse(data: data)
+            print(friends)
+            completion(friends)
+        }
+        
+    }
+    
+    //    let baseURL = "https://api.vk.com/method"
+    //    let apiKey = Session.shared.token
+    //
+    //    func request () {
+    //        let path = "/friends.get"
+    //        let url = baseURL + path
+    //
+    //        let parameters: Parameters = [
+    //            "fields": "name",
+    //            "v": "5.52",
+    //            "access_token": apiKey
+    //        ]
+    
+    //        Alamofire.request(url, method: .get, parameters: parameters).responseData { response in
+    //            print("Запрос друзей \(response.value ?? "")")
+    //        }
+    
+    
+    //        Alamofire.request(url, method: .get, parameters: parameters).responseJSON { response in
+    //            print("Запрос друзей \(response.value ?? "")")
+    //        }
+    
+    //        Alamofire.request("https://api.vk.com/method/friends.get?v=5.52&access_token=813c1c16e28b5c1ee4876f3b65e8260a8626dbd18a6f5d06faa9db78225b90b00594512ad33a92c3bf0a0").responseJSON { response in
+    //            print(response.value)
+}
+//class SerializerParser: FriendsParser {
+//    func parse(data: Data) -> [FriendUrl] {
+//        do {
+//            let json = try JSONSerialization.jsonObject(with: data, options: .mutableContainers)
+//
+//            guard let jsonParsed = json as? [String: Any],
+//                let response = jsonParsed["response"] as? [String: Any],
+//                let items = response["items"] as? [Any] else {return []}
+//
+//            let result = items.compactMap { raw -> FriendUrl? in
+//                guard let point = raw as? [String: Any],
+//                    let id = point["id"] as? Int,
+//                    let firstName = point["first_name"] as? String,
+//                    let lastName = point["last_name"] as? String,
+//                    let photo = point["photo_50"] as? String else {return nil}
+//
+//                var friend = FriendUrl()
+//
+//                friend.id = id
+//                friend.fisrtName = firstName
+//                friend.lastName = lastName
+//                friend.photo = photo
+//
+//                return friend
+//
+//            }
+//             return result
+//        }catch {
+//            print(error.localizedDescription)
+//            return []
+//        }
+//    }
+//
+//
+//
+//}
