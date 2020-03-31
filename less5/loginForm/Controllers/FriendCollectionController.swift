@@ -48,10 +48,7 @@ class FriendCollectionController: UICollectionViewController {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "FriendsCollectionCell", for: indexPath) as! FriendsCollectionCell
         
         let image = collectionFriendImage ?? ""
-        if let url = URL(string: image) {
-                    cell.friendImageView.image = UIImage(data: try! Data(contentsOf: url))
-                }
-        
+        cell.friendImageView.image = Session.shared.getImage(url: image)
         return cell
     }
     

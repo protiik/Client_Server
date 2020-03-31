@@ -13,4 +13,13 @@ class Session {
     static let shared: Session = .init()
     var token = String()
     var userId = Int()
+    
+    
+    func getImage (url:String?) -> UIImage?{
+           guard let image = url else { return nil }
+           if let url = URL(string: image) {
+            return UIImage(data: try! Data(contentsOf: url))
+           }
+           return nil
+       }
 }

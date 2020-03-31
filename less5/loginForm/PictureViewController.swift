@@ -45,9 +45,8 @@ class PictureViewController: UIViewController {
             self.photosList = photos
             let section = self.photosList.map {$0.photo}
             let images = section[self.count]
-            if let url = URL(string: images) {
-                self.imagesFriendOne.image = UIImage(data: try! Data(contentsOf: url))
-            }
+
+            self.imagesFriendOne.image = Session.shared.getImage(url: images)
         }
     }
     
@@ -88,10 +87,12 @@ class PictureViewController: UIViewController {
                 count -= 1
                 if count >= 0 && count < photosList.count {
                     let section = photosList.map {$0.photo}
-                           let images = section[count]
-                           if let url = URL(string: images) {
-                               imagesFriendTwo.image = UIImage(data: try! Data(contentsOf: url))
-                           }
+                    DispatchQueue.global().async {
+                        let images = section[self.count]
+                        DispatchQueue.main.async {
+                            self.imagesFriendTwo.image = Session.shared.getImage(url: images)
+                        }
+                    }
                     self.imagesFriendTwo.isHidden = false
                     interactiveAnimate.addAnimations {
                         UIView.animateKeyframes(withDuration: 2, delay: 0, options: [], animations: {
@@ -119,9 +120,11 @@ class PictureViewController: UIViewController {
                 count += 1
                 if count < photosList.count {
                     let section = photosList.map {$0.photo}
-                           let images = section[count]
-                           if let url = URL(string: images) {
-                               imagesFriendTwo.image = UIImage(data: try! Data(contentsOf: url))
+                          DispatchQueue.global().async {
+                               let images = section[self.count]
+                               DispatchQueue.main.async {
+                                   self.imagesFriendTwo.image = Session.shared.getImage(url: images)
+                               }
                            }
                     self.imagesFriendTwo.isHidden = false
                     interactiveAnimate.addAnimations {
@@ -196,8 +199,11 @@ class PictureViewController: UIViewController {
                 if count >= 0 && count < photosList.count {
                     let section = photosList.map {$0.photo}
                            let images = section[count]
-                           if let url = URL(string: images) {
-                               imagesFriendOne.image = UIImage(data: try! Data(contentsOf: url))
+                           DispatchQueue.global().async {
+                               let images = section[self.count]
+                               DispatchQueue.main.async {
+                                   self.imagesFriendOne.image = Session.shared.getImage(url: images)
+                               }
                            }
                     self.imagesFriendOne.isHidden = false
                     
@@ -229,9 +235,11 @@ class PictureViewController: UIViewController {
                 count += 1
                 if count < photosList.count {
                     let section = photosList.map {$0.photo}
-                           let images = section[count]
-                           if let url = URL(string: images) {
-                               imagesFriendOne.image = UIImage(data: try! Data(contentsOf: url))
+                           DispatchQueue.global().async {
+                               let images = section[self.count]
+                               DispatchQueue.main.async {
+                                   self.imagesFriendOne.image = Session.shared.getImage(url: images)
+                               }
                            }
                     self.imagesFriendOne.isHidden = false
                     

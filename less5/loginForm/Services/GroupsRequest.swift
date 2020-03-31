@@ -70,7 +70,7 @@ class SwiftyJSONParserGroups: GroupsParser {
 
 class GroupsRequest: GroupsServiceRequest {
     
-    let db: DataBaseGroups = .init()
+//    let db: DataBaseGroups = .init()
     
     let parser: GroupsParser
     
@@ -96,8 +96,8 @@ class GroupsRequest: GroupsServiceRequest {
             
             let groups: [GroupsVK] = self.parser.parse(data: data)
             do{
-                try self.db.save(groups:groups)
-                print(self.db.groups())
+//                try self.db.save(groups:groups)
+//                print(self.db.groups())
             }
             catch {
                 print("error db")

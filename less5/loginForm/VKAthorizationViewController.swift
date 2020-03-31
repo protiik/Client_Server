@@ -10,7 +10,6 @@ import UIKit
 import WebKit
 
 class VKAthorizationViewController: UIViewController {
-
     @IBOutlet weak var webView: WKWebView!
     
     override func viewDidLoad() {
@@ -32,6 +31,7 @@ class VKAthorizationViewController: UIViewController {
         let request = URLRequest(url: urlComponents.url!)
         webView.navigationDelegate = self
         webView.load(request)
+        
     }
 }
 

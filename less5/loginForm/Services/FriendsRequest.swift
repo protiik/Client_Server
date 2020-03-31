@@ -17,6 +17,8 @@ class FriendsVK: Object {
     @objc dynamic var lastName = String()
     @objc dynamic var photo = String()
     @objc dynamic var photoFull = String()
+    
+    
 }
 
 class DataBaseFriends {
@@ -75,7 +77,7 @@ class SwiftyJSONParserFriends: FriendsParser {
 
 class FriendRequest: FriendsServiceRequest {
     
-    let db: DataBaseFriends = .init()
+//    let db: DataBaseFriends = .init()
     let parser: FriendsParser
     
     init (parser: FriendsParser) {
@@ -101,8 +103,8 @@ class FriendRequest: FriendsServiceRequest {
             
             let friends: [FriendsVK] = self.parser.parse(data: data)
             do{
-                try self.db.save(friends:friends)
-                print(self.db.friends())
+//                try self.db.save(friends:friends)
+//                print(self.db.friends())
             }
             catch {
                 print("error db")

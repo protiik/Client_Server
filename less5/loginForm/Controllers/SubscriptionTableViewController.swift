@@ -12,7 +12,7 @@ class SubscriptionTableViewController: UITableViewController {
     
     let groupsService: GroupsServiceRequest = GroupsRequest(parser: SwiftyJSONParserGroups())
     var groupsList: [GroupsVK] = []
-    
+    var cachedImaged = [String: UIImage]()
     
     @IBOutlet weak var searBarGroup:UISearchBar!
     
@@ -57,6 +57,21 @@ class SubscriptionTableViewController: UITableViewController {
             tableView.reloadData()
         }
     }
+    
+    
+    private func downloadImage (for url: String, indexPath: IndexPath) {
+        DispatchQueue.global().async {
+            if let image = Session.shared.getImage(url: url){
+                self.cachedImaged[url] = image
+            }
+            DispatchQueue.main.async {
+                self.tableView.reloadRows(at: [indexPath], with: .automatic)
+            }
+        }
+    }
+        
+    
+    
     //функция удаления элементов
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         let nameGroup = groupsMassive[indexPath.row]
@@ -104,13 +119,14 @@ class SubscriptionTableViewController: UITableViewController {
 //            cell.groupNameLabel.text = subscriptionName.name
 //            cell.groupImageView.image = subscriptionName.imageGroups
 //        }
-        let image = "\(groupsList[indexPath.row].photo)"
-        if let url = URL(string: image) {
-            cell.groupImageView.image = UIImage(data: try! Data(contentsOf: url))
-        }
-        
         cell.groupNameLabel.text = "\(groupsList[indexPath.row].name)"
+        let image = "\(groupsList[indexPath.row].photo)"
         
+        if let cached = cachedImaged[image] {
+            cell.groupImageView.image = cached
+        }else {
+            downloadImage(for: image, indexPath: indexPath)
+        }
         return cell
     }
     

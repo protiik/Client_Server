@@ -97,7 +97,7 @@ class PhotosRequest: PhotosServiceRequest {
             let photos: [PhotosVK] = self.parser.parse(data: data)
             do{
                 try self.db.save(photos:photos)
-                print(self.db.photos())
+//                print(self.db.photos())
             }
             catch {
                 print("error db")
