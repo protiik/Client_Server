@@ -14,7 +14,6 @@ class PictureViewController: UIViewController {
     var photosList: [PhotosVK] = []
     var photosCached = [UIImage]()
     
-    var collectionImage:[UIImage] = [UIImage(named: "Jessica")!, UIImage(named: "wolf")!, UIImage(named: "Jony")!, UIImage(named: "Cat")!, UIImage(named: "space")!]
     
     @IBOutlet weak var imagesFriendOne: UIImageView!
     @IBOutlet weak var imagesFriendTwo: UIImageView!

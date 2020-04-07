@@ -13,8 +13,9 @@ import RealmSwift
 
 class FriendsVK: Object {
     @objc dynamic var id = Int()
-    @objc dynamic var fisrtName = String()
-    @objc dynamic var lastName = String()
+//    @objc dynamic var firstName = String()
+//    @objc dynamic var lastName = String()
+    @objc dynamic var name = ""
     @objc dynamic var photo = String()
     @objc dynamic var photoFull = String()
     
@@ -61,8 +62,9 @@ class SwiftyJSONParserFriends: FriendsParser {
             let result = items.map{item -> FriendsVK in
                 let friends = FriendsVK()
                 friends.id = item["id"].intValue
-                friends.fisrtName = item["first_name"].stringValue
-                friends.lastName = item["last_name"].stringValue
+                let firstName = item["first_name"].stringValue
+                let lastName = item["last_name"].stringValue
+                friends.name = "\(firstName) \(lastName)"
                 friends.photo = item["photo_50"].stringValue
                 friends.photoFull = item["photo_100"].stringValue
                 
@@ -77,9 +79,7 @@ class SwiftyJSONParserFriends: FriendsParser {
 }
 
 class FriendRequest: FriendsServiceRequest {
-    
     let parser: FriendsParser
-    
     func save( friends: [FriendsVK] )  {
         do {
             let realm = try Realm()
@@ -91,7 +91,7 @@ class FriendRequest: FriendsServiceRequest {
         }catch{
             print(error.localizedDescription)
         }
-        
+
     }
     
     init (parser: FriendsParser) {
