@@ -14,6 +14,7 @@ class FriendsTableViewController: UITableViewController{
     
     let friendService: FriendsServiceRequest = FriendRequest(parser: SwiftyJSONParserFriends())
     var friendsList: [Results<FriendsVK>] = []
+    var searchMassive: [Results<FriendsVK>] = []
     var token: [NotificationToken] = []
     
     var cachedImaged = [String: UIImage]()
@@ -33,7 +34,6 @@ class FriendsTableViewController: UITableViewController{
         
         friendService.loadData {
 //            self.loadData()
-            print(self.friendsList.count)
             self.prepareSections()
         }
     }
@@ -48,8 +48,9 @@ class FriendsTableViewController: UITableViewController{
     func prepareSections () {
         do {
             let realm = try Realm()
+            print(realm.configuration.fileURL ?? "Нет данных в БД")
             let friendsLetters = Array (Set (realm.objects(FriendsVK.self).compactMap{$0.name.first?.lowercased()})).sorted()
-            friendsList = friendsLetters.map {realm.objects(FriendsVK.self).filter("name BEGINSWITH[д] %s", $0)}
+            friendsList = friendsLetters.map {realm.objects(FriendsVK.self).filter("name BEGINSWITH[cd] %s", $0)}
             token.removeAll()
             friendsList.enumerated().forEach {observeChangesFriends(section: $0.offset, results: $0.element)}
             tableView.reloadData()
@@ -74,12 +75,8 @@ class FriendsTableViewController: UITableViewController{
                 case .error(let error):
                     print(error.localizedDescription)
                 }
-                
-                
             })
-        
     }
-   
     
 //    func loadData () {
 //        do{
@@ -100,6 +97,7 @@ class FriendsTableViewController: UITableViewController{
             }
             DispatchQueue.main.async {
                 self.tableView.reloadRows(at: [indexPath], with: .automatic)
+                self.tableView.tableHeaderView?.reloadInputViews()
             }
         }
     }
@@ -107,37 +105,34 @@ class FriendsTableViewController: UITableViewController{
     
     override func numberOfSections(in tableView: UITableView) -> Int {
         
-//        if searching {
-//            return searchFriend.count
-//        }else {
-//            return sections.count
-//        }
-        return friendsList.count
+        if searching {
+            return searchMassive.count
+        }else {
+            return friendsList.count
+        }
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
-//        if searching {
-//            return searchFriend[section].names.count
-//        }else {
-//            return sections[section].names.count
-//        }
-        friendsList[section].count
+        if searching {
+            return searchMassive[section].count
+        }else {
+            return friendsList[section].count
+        }
     }
     
     override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         guard let headerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: "HeaderView") as? TestTableViewHeader else {
             preconditionFailure("нет связи HeaderView")}
         
-//        if searching {
-//            headerView.someLabel.text = searchFriend[section].letter
-//        }else {
-//            headerView.someLabel.text = sections[section].letter
-//        }
-//
-//        headerView.layer.backgroundColor = #colorLiteral(red: 0.1813154817, green: 0.5886535645, blue: 0.9971618056, alpha: 1)
-//        headerView.someLabel.text = sections[section].letter
-//        //
+        if searching {
+            headerView.someLabel.text = searchMassive[section].first?.name.first?.uppercased()
+        }else {
+            headerView.someLabel.text = friendsList[section].first?.name.first?.uppercased()
+        }
+        
+        headerView.layer.backgroundColor = #colorLiteral(red: 0.1813154817, green: 0.5886535645, blue: 0.9971618056, alpha: 1)
+        
         return headerView
     }
     
@@ -146,47 +141,30 @@ class FriendsTableViewController: UITableViewController{
             preconditionFailure("нет связи FriendsCell")
         }
         //         Если есть буква в сеарч баре тогда
-//        if searching {
-//            let section = searchFriend[indexPath.section]
-//            let name = section.names[indexPath.row]//id
-//            cell.nameLabel.text = name// имя
-//            //картинка
-//
-//
-//            for i in self.friendsList!{
-//                if "\(i.lastName) \(i.fisrtName)" == name{
-//                    let image = i.photo
-//
-//                    if let cached = cachedImaged[image] {
-//                        cell.imageFriendView?.image = cached
-//                    }else {
-//                        downloadImage(for: image, indexPath: indexPath)
-//                    }
-//                }
-//            }
-//
-//        }else {
-//            let section = sections[indexPath.section]
-//            let name = section.names[indexPath.row]//id
-//            cell.nameLabel.text = name// имя
-//            //картинка
-//
-//            for i in self.friendsList!{
-//                if "\(i.lastName) \(i.fisrtName)" == name{
-//                    let image = i.photo
-//                    if let cached = cachedImaged[image] {
-//                        cell.imageFriendView?.image = cached
-//                    }else {
-//                        downloadImage(for: image, indexPath: indexPath)
-//                    }
-//                }
-//            }
-//        }
-        print(friendsList)
-        let section = friendsList[indexPath.section]
-        let name = section[indexPath.row]
-        cell.nameLabel.text =  name.name
-        print(name)
+        if searching {
+            let element = searchMassive[indexPath.section][indexPath.row]
+            cell.nameLabel.text = element.name// имя
+            //картинка
+            let image = element.photo
+            if let cahed = cachedImaged[image]{
+                cell.imageFriendView.image = cahed
+            }else {
+                downloadImage(for: image, indexPath: indexPath)
+            }
+
+        }else {
+            let element = friendsList[indexPath.section][indexPath.row]
+            let image = element.photo
+            if let cahed = cachedImaged[image]{
+                cell.imageFriendView.image = cahed
+            }else {
+                downloadImage(for: image, indexPath: indexPath)
+            }
+            
+            cell.nameLabel.text =  element.name
+            //картинка
+
+        }
         
         return cell
     }
@@ -213,21 +191,23 @@ class FriendsTableViewController: UITableViewController{
      }
      */
     
-    
-    // Override to support editing the table view.
-    //функция удаления эллементов свайпом
-    //    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-    //        var section = sections[indexPath.section]
-    //        var nameFriend = section.names[indexPath.row]
-    //        if editingStyle == .delete {
-    //            // Delete the row from the data source
-    //
-    //            sections.remove(at: indexPath.section)
-    //            print("Удален друг: " + String(nameFriend) + " ((((")
-    //            tableView.deleteRows(at: [IndexPath(row : indexPath.row, section : indexPath.section)], with: .fade)
-    //            tableView.reloadData()
-    //        }
-    //    }
+//
+//     Override to support editing the table view.
+//    функция удаления эллементов свайпом
+        override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+            let name = friendsList[indexPath.section][indexPath.row]
+            if editingStyle == .delete {
+                // Delete the row from the data source
+                do{
+                    let realm = try Realm()
+                    realm.beginWrite()
+                    realm.delete(name)
+                    try realm.commitWrite()
+                }catch{
+                    print(error.localizedDescription)
+                }
+            }
+        }
     
     /*
      // Override to support rearranging the table view.
@@ -253,34 +233,24 @@ class FriendsTableViewController: UITableViewController{
         
         // Get the new view controller using segue.destination.
         // Pass the selected object to the new view controller.
-//        if segue.identifier == "Show Friends",
-//            let indexPath = tableView.indexPathForSelectedRow {
-//
-//            if searching {
-//                let section = searchFriend[indexPath.section] // id элемента
-//                let titleFriendName = section.names[indexPath.row]
-//                let destinationViewController = segue.destination as? FriendCollectionController //определение куда передаем инфу
-//                destinationViewController?.collectionFriendName = titleFriendName
-//                //картинка
-//                for i in friendsList!{
-//                    if "\(i.lastName) \(i.fisrtName)" == titleFriendName{
-//                        destinationViewController?.collectionFriendImage = i.photoFull
-//                        Session.shared.userId = i.id
-//                    }
-//                }
-//            }else {
-//                let section = sections[indexPath.section] // id элемента
-//                let titleFriendName = section.names[indexPath.row]
-//                let destinationViewController = segue.destination as? FriendCollectionController //определение куда передаем инфу
-//                destinationViewController?.collectionFriendName = titleFriendName
-//                //картинка
-//                for i in friendsList!{
-//                    if "\(i.lastName) \(i.fisrtName)" == titleFriendName{
-//                        destinationViewController?.collectionFriendImage = i.photoFull
-//                        Session.shared.userId = i.id
-//                    }
-//                }
-//            }
+        if segue.identifier == "Show Friends",
+            let indexPath = tableView.indexPathForSelectedRow {
+
+            if searching {
+                let element = searchMassive[indexPath.section][indexPath.row] // id элемента
+                let destinationViewController = segue.destination as? FriendCollectionController //определение куда передаем инфу
+                destinationViewController?.collectionFriendName = element.name
+                //картинка
+                
+            }else {
+                let section = friendsList[indexPath.section] // id элемента
+                let element = section[indexPath.row]
+                let destinationViewController = segue.destination as? FriendCollectionController //определение куда передаем инфу
+                destinationViewController?.collectionFriendName = element.name
+                //картинка
+                destinationViewController?.collectionFriendImage = element.photo
+                Session.shared.userId = element.id
+            }
             
             //            let section = friendsList[indexPath.row]
             //            let firstFriendName = section.fisrtName
@@ -293,44 +263,39 @@ class FriendsTableViewController: UITableViewController{
             //            Session.shared.userId = id
         }
     }
-    
+}
     
 
 // Поиск
 extension FriendsTableViewController : UISearchBarDelegate {
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        searching = true
     
-//    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-//
-//        var searchMassive = [String]()
-//        for i in friendsList!{
-//            searchMassive.append("\(i.lastName) \(i.fisrtName)")
-//        }
-//        //Поиск
-//        searchAns = searchMassive.filter({$0.contains(searchText)})
+        //Поиск
+//        searchAns = searchMassive.filter({$0!.contains(searchText)}) as! [String]
 //        //Сортировка под новую структуру
 //        let groupedDictionary = Dictionary(grouping: searchAns, by: {String($0.prefix(1))})
 //        let keys = groupedDictionary.keys.sorted()
 //        searchFriend = keys.map{ Search(letter: $0, names: groupedDictionary[$0]!.sorted()) }
-//
-//
-//        searching = true
-//        print(searchAns)
-//        tableView.reloadData()
-//
-//    }
-//
-//    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
-//
-//        hideKeyboard()
-//        searching = false
-//        searchBar.text = ""
-//        tableView.reloadData()
-//
-//    }
-//    //Закрыть клавиатуру
-//    @objc func hideKeyboard() {
-//        self.searhBar.endEditing(true)
-//    }
+
+
+        print(searchMassive)
+        tableView.reloadData()
+
+    }
+
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+
+        hideKeyboard()
+        searching = false
+        searchBar.text = ""
+        tableView.reloadData()
+
+    }
+    //Закрыть клавиатуру
+    @objc func hideKeyboard() {
+        self.searhBar.endEditing(true)
+    }
     
     
     
