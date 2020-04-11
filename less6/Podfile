@@ -7,6 +7,9 @@ target 'loginForm' do
   pod 'Alamofire', '~> 4.8'
   pod 'RealmSwift'
   pod 'SwiftyJSON'
+  pod 'Firebase/Analytics'
+  pod 'Firebase/Database'
+  pod 'Firebase/Auth'
   # Pods for loginForm
 
 end

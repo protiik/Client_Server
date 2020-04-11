@@ -7,8 +7,9 @@
 //
 
 import UIKit
-import Alamofire
 import RealmSwift
+import FirebaseDatabase
+
 
 class FriendsTableViewController: UITableViewController{
     
@@ -16,7 +17,7 @@ class FriendsTableViewController: UITableViewController{
     var friendsList: [Results<FriendsVK>] = []
     var searchMassive: [Results<FriendsVK>] = []
     var token: [NotificationToken] = []
-    
+    var requestHandler: UInt = 0
     var cachedImaged = [String: UIImage]()
     
     @IBOutlet weak var searhBar: UISearchBar!
@@ -36,6 +37,14 @@ class FriendsTableViewController: UITableViewController{
 //            self.loadData()
             self.prepareSections()
         }
+        
+        
+        let db = Database.database().reference()
+        requestHandler = db.child("id").observe(.value, with: { snapshot in
+            guard let id = snapshot.value as? [String] else {return}
+            print (id)
+        })
+        
     }
     
     

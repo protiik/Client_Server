@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import FirebaseAuth
+import FirebaseDatabase
 
 class LoginFormController: UIViewController {
     
@@ -15,7 +17,7 @@ class LoginFormController: UIViewController {
     @IBOutlet weak var textFieldPass: UITextField!
     @IBOutlet weak var labelLogin: UILabel!
     @IBOutlet weak var buttonIn : UIButton!
-    
+    var requestHandler: UInt = 0
     
     
     override func viewDidLoad() {
@@ -26,44 +28,61 @@ class LoginFormController: UIViewController {
         
         buttonIn.layer.cornerRadius = 20
     }
-    
-    // Ошибка авторизации
-    func showInError() {
-        
-        let alertVC = UIAlertController(title: "Ошибка", message: "Неверный логин или пароль", preferredStyle: .alert)
-        let action = UIAlertAction(title: "Ok", style: .default) { _ in
-            print("Ок clicked")
-        }
-        alertVC.addAction(action)
-        
-        present(alertVC, animated: true, completion: nil)
-    }
-    
-    
-    func checkLogin() -> Bool {
-        if let login = textFieldLogin.text,
-            let pass = textFieldPass.text {
-            
-            if login == "admin", pass == "admin" {
-                print("Успешная авторизация")
-                return true
-            }else {
-                print("Не успешная авторизация")
-                return false
+    //vot@mail.ru / 123456
+    @IBAction func goNext(_ sender: Any) {
+        var id:String?
+        guard let email = textFieldLogin.text, let pass = textFieldPass.text else {return}
+        let db = Database.database().reference()
+        Auth.auth().signIn(withEmail: email, password: pass) {(result, error) in
+            id = result?.user.uid ?? ""
+            print(id ?? "")
+            db.child("id").updateChildValues(["1": id ?? ""])
+            if result?.user != nil {
+                self.performSegue(withIdentifier: "next", sender: self)
             }
-        };return false
-    }
-    
-    
-    override func shouldPerformSegue(withIdentifier identifier: String, sender: Any?) -> Bool {
-        if checkLogin(){
-            return true
-        }else{
-            showInError()
-            return false
+            
         }
-        
     }
+    // Ошибка авторизации
+//    func showInError() {
+//
+//        let alertVC = UIAlertController(title: "Ошибка", message: "Неверный логин или пароль", preferredStyle: .alert)
+//        let action = UIAlertAction(title: "Ok", style: .default) { _ in
+//            print("Ок clicked")
+//        }
+//        alertVC.addAction(action)
+//
+//        present(alertVC, animated: true, completion: nil)
+//    }
+    
+    
+//    func checkLogin() -> Bool {
+//        if let login = textFieldLogin.text,
+//            let pass = textFieldPass.text {
+//
+//            if login == "admin", pass == "admin" {
+//                print("Успешная авторизация")
+//                return true
+//            }else {
+//                print("Не успешная авторизация")
+//                return false
+//            }
+//        };return false
+//    }
+//
+//
+//    override func shouldPerformSegue(withIdentifier identifier: String, sender: Any?) -> Bool {
+//        if checkLogin(){
+//            return true
+//        }else{
+//            showInError()
+//            return false
+//        }
+//
+//    }
+    
+    
+    
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)

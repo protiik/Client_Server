@@ -8,6 +8,8 @@
 
 import UIKit
 import RealmSwift
+import FirebaseDatabase
+
 
 class SubscriptionTableViewController: UITableViewController {
     
@@ -28,44 +30,44 @@ class SubscriptionTableViewController: UITableViewController {
         super.viewDidLoad()
         
         groupsService.loadData {
-            self.prepareSections()
+//            self.prepareSections()
             self.tableView.reloadData()
         }
         
     }
     
-    func prepareSections () {
-        do {
-            let realm = try Realm()
-            print(realm.configuration.fileURL ?? "Нет данных в БД")
-            let groupsLetters = Array (Set (realm.objects(GroupsVK.self).compactMap{$0.name.first?.lowercased()})).sorted()
-            groupsList = groupsLetters.map {realm.objects(GroupsVK.self).filter("name BEGINSWITH[cd] %s", $0)}
-            token.removeAll()
-            groupsList.enumerated().forEach {observeChangesGroups(section: $0.offset, results: $0.element)}
-            tableView.reloadData()
-        }catch {
-            print(error.localizedDescription)
-        }
-    }
-    
-    func observeChangesGroups (section: Int, results: Results<GroupsVK>) {
-        
-        token.append (results.observe { changes in
-                guard let tableView = self.tableView else { return }
-                switch changes {
-                case .initial:
-                    tableView.reloadSections(IndexSet(integer: section), with: .automatic)
-                case .update(_, let deletions, let insertions, let modifications):
-                    tableView.beginUpdates()
-                    tableView.insertRows(at: insertions.map({IndexPath(row: $0, section: section)}), with: .automatic)
-                    tableView.deleteRows(at: deletions.map({IndexPath(row: $0, section: section)}), with: .automatic)
-                    tableView.reloadRows(at: modifications.map({IndexPath(row: $0, section: section)}), with: .automatic)
-                    tableView.endUpdates()
-                case .error(let error):
-                    print(error.localizedDescription)
-                }
-            })
-    }
+//    func prepareSections () {
+//        do {
+//            let realm = try Realm()
+//            print(realm.configuration.fileURL ?? "Нет данных в БД")
+//            let groupsLetters = Array (Set (realm.objects(GroupsVK.self).compactMap{$0.name.first?.lowercased()})).sorted()
+//            groupsList = groupsLetters.map {realm.objects(GroupsVK.self).filter("name BEGINSWITH[cd] %s", $0)}
+//            token.removeAll()
+//            groupsList.enumerated().forEach {observeChangesGroups(section: $0.offset, results: $0.element)}
+//            tableView.reloadData()
+//        }catch {
+//            print(error.localizedDescription)
+//        }
+//    }
+//
+//    func observeChangesGroups (section: Int, results: Results<GroupsVK>) {
+//
+//        token.append (results.observe { changes in
+//                guard let tableView = self.tableView else { return }
+//                switch changes {
+//                case .initial:
+//                    tableView.reloadSections(IndexSet(integer: section), with: .automatic)
+//                case .update(_, let deletions, let insertions, let modifications):
+//                    tableView.beginUpdates()
+//                    tableView.insertRows(at: insertions.map({IndexPath(row: $0, section: section)}), with: .automatic)
+//                    tableView.deleteRows(at: deletions.map({IndexPath(row: $0, section: section)}), with: .automatic)
+//                    tableView.reloadRows(at: modifications.map({IndexPath(row: $0, section: section)}), with: .automatic)
+//                    tableView.endUpdates()
+//                case .error(let error):
+//                    print(error.localizedDescription)
+//                }
+//            })
+//    }
     
 //    func loadData () {
 //        do{
@@ -79,6 +81,7 @@ class SubscriptionTableViewController: UITableViewController {
 //    }
     
     //сигуэй при выходе с контроллера, добавление элементов на другой контролллер
+    var count = 0
     @IBAction func addGroup(segue: UIStoryboardSegue) {
         var nameGroups = [String]() //массив для перебора имен в массиве groupsMassive
         for i in groupsMassive{
@@ -96,6 +99,9 @@ class SubscriptionTableViewController: UITableViewController {
                 if !nameGroups.contains(nameAllGroup) {
                     groupsMassive.append(addGroup)
                     print("Добавлен элемент: " + nameAllGroup)
+                    count += 1
+                    let db = Database.database().reference()
+                    db.child("groups").updateChildValues(["\(count)": nameAllGroup])
                 }
             }
             //обновляем таблицу
@@ -131,10 +137,10 @@ class SubscriptionTableViewController: UITableViewController {
     }
     // MARK: - Table view data source
     
-        override func numberOfSections(in tableView: UITableView) -> Int {
-            // #warning Incomplete implementation, return the number of sections
-            return groupsList.count
-        }
+//        override func numberOfSections(in tableView: UITableView) -> Int {
+//            // #warning Incomplete implementation, return the number of sections
+////            return groupsList.count
+//        }
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
 //        if searching{
@@ -143,7 +149,8 @@ class SubscriptionTableViewController: UITableViewController {
 //            return groupsMassive.count
 //        }
         
-        groupsList[section].count
+//        groupsList[section].count
+        groupsMassive.count
         
     }
     
@@ -151,27 +158,27 @@ class SubscriptionTableViewController: UITableViewController {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "GroupsCell", for: indexPath) as? GroupsCell else {
             preconditionFailure("No connect GroupCell")
         }
-//        if searching{
-//            let subscriptionName = searchAns[indexPath.row]
-//            cell.groupNameLabel.text = subscriptionName
-//            for i in groupsMassive {
-//                if subscriptionName == i.name{
-//                    cell.groupImageView.image = i.imageGroups
-//                }
-//            }
-//        }else {
-//            let subscriptionName = groupsMassive[indexPath.row]
-//            cell.groupNameLabel.text = subscriptionName.name
-//            cell.groupImageView.image = subscriptionName.imageGroups
-//        }
-        let element = groupsList[indexPath.section][indexPath.row]
-        cell.groupNameLabel.text = element.name
-        let image = element.photo
-        if let cached = cachedImaged[image] {
-            cell.groupImageView.image = cached
+        if searching{
+            let subscriptionName = searchAns[indexPath.row]
+            cell.groupNameLabel.text = subscriptionName
+            for i in groupsMassive {
+                if subscriptionName == i.name{
+                    cell.groupImageView.image = i.imageGroups
+                }
+            }
         }else {
-            downloadImage(for: image, indexPath: indexPath)
+            let subscriptionName = groupsMassive[indexPath.row]
+            cell.groupNameLabel.text = subscriptionName.name
+            cell.groupImageView.image = subscriptionName.imageGroups
         }
+//        let element = groupsList[indexPath.section][indexPath.row]
+//        cell.groupNameLabel.text = element.name
+//        let image = element.photo
+//        if let cached = cachedImaged[image] {
+//            cell.groupImageView.image = cached
+//        }else {
+//            downloadImage(for: image, indexPath: indexPath)
+//        }
         return cell
     }
     

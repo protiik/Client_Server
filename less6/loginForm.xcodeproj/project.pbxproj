@@ -38,6 +38,7 @@
 		9C761E7B23E1EBE00090FB56 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9C761E7923E1EBE00090FB56 /* Main.storyboard */; };
 		9C761E7D23E1EBE10090FB56 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9C761E7C23E1EBE10090FB56 /* Assets.xcassets */; };
 		9C761E8023E1EBE10090FB56 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9C761E7E23E1EBE10090FB56 /* LaunchScreen.storyboard */; };
+		9CE96D472441BD0500417A7C /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 9CE96D462441BD0500417A7C /* GoogleService-Info.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -75,6 +76,7 @@
 		9C761E7C23E1EBE10090FB56 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9C761E7F23E1EBE10090FB56 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		9C761E8123E1EBE10090FB56 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		9CE96D462441BD0500417A7C /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		ADFFE5F533C1DCD2E302E418 /* Pods-loginForm.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-loginForm.release.xcconfig"; path = "Target Support Files/Pods-loginForm/Pods-loginForm.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -175,6 +177,7 @@
 		9C761E7223E1EBE00090FB56 /* loginForm */ = {
 			isa = PBXGroup;
 			children = (
+				9CE96D462441BD0500417A7C /* GoogleService-Info.plist */,
 				9CCE2CD8241C72DB000EF13E /* Services */,
 				076A9C522410F55700B3CC72 /* AnimateNavigationController */,
 				9C4AC87E23F1698B00BFF5E7 /* Controllers */,
@@ -265,6 +268,7 @@
 			files = (
 				9C2E833B23FFD83300BD244F /* TestTableViewHeader.xib in Resources */,
 				9C761E8023E1EBE10090FB56 /* LaunchScreen.storyboard in Resources */,
+				9CE96D472441BD0500417A7C /* GoogleService-Info.plist in Resources */,
 				9C761E7D23E1EBE10090FB56 /* Assets.xcassets in Resources */,
 				9C761E7B23E1EBE00090FB56 /* Main.storyboard in Resources */,
 			);
