@@ -38,7 +38,7 @@ class GroupsVK: Object {
 //}
 
 protocol GroupsServiceRequest {
-    func loadData (completion: @escaping () -> Void)
+    func loadData ()
 }
 
 protocol GroupsParser {
@@ -90,7 +90,7 @@ class GroupsRequest: GroupsServiceRequest {
         self.parser = parser
     }
     
-    func loadData(completion: @escaping () -> Void) {
+    func loadData() {
         let baseURL = "https://api.vk.com/method"
         let apiKey = Session.shared.token
         
@@ -103,14 +103,13 @@ class GroupsRequest: GroupsServiceRequest {
             "extended": 1
         ]
         
-        Alamofire.request(url, method: .get, parameters: parameters).responseJSON { [completion] (response) in
+        Alamofire.request(url, method: .get, parameters: parameters).responseJSON {  (response) in
             guard let data = response.data else { return }
             
             let groups: [GroupsVK] = self.parser.parse(data: data)
             self.save(groups: groups)
             
             
-            completion()
         }
         
     }

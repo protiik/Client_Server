@@ -14,8 +14,8 @@ import FirebaseDatabase
 class SubscriptionTableViewController: UITableViewController {
     
     let groupsService: GroupsServiceRequest = GroupsRequest(parser: SwiftyJSONParserGroups())
-    var groupsList: [Results<GroupsVK>] = []
-    var token: [NotificationToken] = []
+    var groupsList: Results<GroupsVK>?
+    var token: NotificationToken?
     var cachedImaged = [String: UIImage]()
     
     @IBOutlet weak var searBarGroup:UISearchBar!
@@ -24,61 +24,73 @@ class SubscriptionTableViewController: UITableViewController {
         Group(name: "Party", imageGroups: UIImage(named: "party")!)
     ]
     var searching = false
-    var searchAns = [String]()
+    var searchAns: Results<GroupsVK>?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        groupsService.loadData {
-//            self.prepareSections()
-            self.tableView.reloadData()
+        groupsService.loadData()
+        observeChangesGroups()
+        //            self.prepareSections()
+        
+        
+    }
+    
+    //    func prepareSections () {
+    //        do {
+    //            let realm = try Realm()
+    //            print(realm.configuration.fileURL ?? "Нет данных в БД")
+    //            let groupsLetters = Array (Set (realm.objects(GroupsVK.self).compactMap{$0.name.first?.lowercased()})).sorted()
+    //            groupsList = groupsLetters.map {realm.objects(GroupsVK.self).filter("name BEGINSWITH[cd] %s", $0)}
+    //            token.removeAll()
+    //            groupsList.enumerated().forEach {observeChangesGroups(section: $0.offset, results: $0.element)}
+    //            tableView.reloadData()
+    //        }catch {
+    //            print(error.localizedDescription)
+    //        }
+    //    }
+    
+    func observeChangesGroups () {
+        do{
+            let realm = try Realm()
+            groupsList = realm.objects(GroupsVK.self)
+            print(realm.configuration.fileURL)
+            token = groupsList?.observe{ (changes) in
+                guard let tableView = self.tableView else { return }
+                switch changes{
+                case .initial:
+                    tableView.reloadData()
+                case .update(_, let deletions, let insertions, let modifications):
+                    tableView.beginUpdates()
+                    
+                    tableView.insertRows(at: insertions.map({IndexPath(row: $0, section: 0)}), with: .none)
+                    tableView.deleteRows(at: deletions.map({IndexPath(row: $0, section: 0)}), with: .none)
+                    tableView.reloadRows(at: modifications.map({IndexPath(row: $0, section: 0)}), with: .none)
+                    tableView.endUpdates()
+                    
+                case .error(let error):
+                    print(error.localizedDescription)
+                }
+                
+                
+                
+            }
+        }catch{
+            print(error.localizedDescription)
         }
         
     }
     
-//    func prepareSections () {
-//        do {
-//            let realm = try Realm()
-//            print(realm.configuration.fileURL ?? "Нет данных в БД")
-//            let groupsLetters = Array (Set (realm.objects(GroupsVK.self).compactMap{$0.name.first?.lowercased()})).sorted()
-//            groupsList = groupsLetters.map {realm.objects(GroupsVK.self).filter("name BEGINSWITH[cd] %s", $0)}
-//            token.removeAll()
-//            groupsList.enumerated().forEach {observeChangesGroups(section: $0.offset, results: $0.element)}
-//            tableView.reloadData()
-//        }catch {
-//            print(error.localizedDescription)
-//        }
-//    }
-//
-//    func observeChangesGroups (section: Int, results: Results<GroupsVK>) {
-//
-//        token.append (results.observe { changes in
-//                guard let tableView = self.tableView else { return }
-//                switch changes {
-//                case .initial:
-//                    tableView.reloadSections(IndexSet(integer: section), with: .automatic)
-//                case .update(_, let deletions, let insertions, let modifications):
-//                    tableView.beginUpdates()
-//                    tableView.insertRows(at: insertions.map({IndexPath(row: $0, section: section)}), with: .automatic)
-//                    tableView.deleteRows(at: deletions.map({IndexPath(row: $0, section: section)}), with: .automatic)
-//                    tableView.reloadRows(at: modifications.map({IndexPath(row: $0, section: section)}), with: .automatic)
-//                    tableView.endUpdates()
-//                case .error(let error):
-//                    print(error.localizedDescription)
-//                }
-//            })
-//    }
-    
-//    func loadData () {
-//        do{
-//            let realm = try Realm()
-//            print(realm.configuration.fileURL)
-//            let groups = realm.objects(GroupsVK.self)
-//            groupsList = Array( groups )
-//        }catch{
-//            print(error.localizedDescription)
-//        }
-//    }
+    //    func loadData () {
+    //        do{
+    //            let realm = try Realm()
+    //            print(realm.configuration.fileURL)
+    //            let groups = realm.objects(GroupsVK.self)
+    //            groupsList = Array( groups )
+    //        }catch{
+    //            print(error.localizedDescription)
+    //        }
+    //    }
     
     //сигуэй при выходе с контроллера, добавление элементов на другой контролллер
     var count = 0
@@ -120,7 +132,7 @@ class SubscriptionTableViewController: UITableViewController {
             }
         }
     }
-        
+    
     
     
     //функция удаления элементов
@@ -137,20 +149,20 @@ class SubscriptionTableViewController: UITableViewController {
     }
     // MARK: - Table view data source
     
-//        override func numberOfSections(in tableView: UITableView) -> Int {
-//            // #warning Incomplete implementation, return the number of sections
-////            return groupsList.count
-//        }
+    //        override func numberOfSections(in tableView: UITableView) -> Int {
+    //            // #warning Incomplete implementation, return the number of sections
+    ////            return groupsList.count
+    //        }
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
-//        if searching{
-//            return searchAns.count
-//        }else{
-//            return groupsMassive.count
-//        }
+        if searching{
+            return searchAns?.count ?? 0
+        }else{
+            return groupsList?.count ?? 0
+        }
         
-//        groupsList[section].count
-        groupsMassive.count
+        //        groupsList?.count ?? 0
+        
         
     }
     
@@ -159,26 +171,26 @@ class SubscriptionTableViewController: UITableViewController {
             preconditionFailure("No connect GroupCell")
         }
         if searching{
-            let subscriptionName = searchAns[indexPath.row]
-            cell.groupNameLabel.text = subscriptionName
-            for i in groupsMassive {
-                if subscriptionName == i.name{
-                    cell.groupImageView.image = i.imageGroups
-                }
-            }
+            let element = searchAns?[indexPath.row]
+            cell.groupNameLabel.text = element?.name
+            //            let image = element?.photo
+            //            if let cached = cachedImaged[image ?? ""] {
+            //                cell.groupImageView.image = cached
+            //            }else {
+            //                downloadImage(for: image ?? "" , indexPath: indexPath)
+            //            }
         }else {
-            let subscriptionName = groupsMassive[indexPath.row]
-            cell.groupNameLabel.text = subscriptionName.name
-            cell.groupImageView.image = subscriptionName.imageGroups
+            let element = groupsList?[indexPath.row]
+            cell.groupNameLabel.text = element?.name
+            let image = element?.photo
+            if let cached = cachedImaged[image ?? "" ] {
+                cell.groupImageView.image = cached
+            }else {
+                downloadImage(for: image ?? "" , indexPath: indexPath)
+            }
         }
-//        let element = groupsList[indexPath.section][indexPath.row]
-//        cell.groupNameLabel.text = element.name
-//        let image = element.photo
-//        if let cached = cachedImaged[image] {
-//            cell.groupImageView.image = cached
-//        }else {
-//            downloadImage(for: image, indexPath: indexPath)
-//        }
+        
+        
         return cell
     }
     
@@ -228,17 +240,31 @@ class SubscriptionTableViewController: UITableViewController {
      */
     
 }
-extension SubscriptionTableViewController:UISearchBarDelegate{
+extension SubscriptionTableViewController: UISearchBarDelegate{
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String){
         
-        let searchMassive = groupsMassive.map {$0.name}
+        //
+        self.searching = true
         
-        searchAns = searchMassive.filter({$0.prefix(searchText.count) == searchText})
+        self.searchAns = self.groupsList?.filter("name contains [c]%@", searchText)
+        self.tableView.reloadData()
         
-        searching = true
-        print(searchAns)
-        tableView.reloadData()
+        
+        //            self.tableView.reloadData()
+        
+        
+        //        let queue = DispatchQueue(label: "download_url")
+        //        private func downloadImage (for url: String, indexPath: IndexPath) {
+        //            queue.async {
+        //                if let image = Session.shared.getImage(url: url){
+        //                    self.cachedImaged[url] = image
+        //                }
+        //                DispatchQueue.main.async {
+        //                    self.tableView.reloadRows(at: [indexPath], with: .automatic)
+        //                }
+        //            }
+        //        }
     }
     
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {

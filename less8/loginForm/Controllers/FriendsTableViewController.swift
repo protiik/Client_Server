@@ -45,6 +45,7 @@ class FriendsTableViewController: UITableViewController{
             print (id)
         })
         
+        
     }
     
     
@@ -130,20 +131,20 @@ class FriendsTableViewController: UITableViewController{
         }
     }
     
-    override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        guard let headerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: "HeaderView") as? TestTableViewHeader else {
-            preconditionFailure("нет связи HeaderView")}
-        
-        if searching {
-            headerView.someLabel.text = searchMassive[section].first?.name.first?.uppercased()
-        }else {
-            headerView.someLabel.text = friendsList[section].first?.name.first?.uppercased()
-        }
-        
-        headerView.layer.backgroundColor = #colorLiteral(red: 0.1813154817, green: 0.5886535645, blue: 0.9971618056, alpha: 1)
-        
-        return headerView
-    }
+//    override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+//        guard let headerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: "HeaderView") as? TestTableViewHeader else {
+//            preconditionFailure("нет связи HeaderView")}
+//
+//        if searching {
+//            headerView.someLabel.text = searchMassive[section].first?.name.first?.uppercased()
+//        }else {
+//            headerView.someLabel.text = friendsList[section].first?.name.first?.uppercased()
+//        }
+//
+//        headerView.layer.backgroundColor = #colorLiteral(red: 0.1813154817, green: 0.5886535645, blue: 0.9971618056, alpha: 1)
+//
+//        return headerView
+//    }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "FriendsCell", for: indexPath) as? FriendsCell else {
@@ -287,6 +288,19 @@ extension FriendsTableViewController : UISearchBarDelegate {
 //        let keys = groupedDictionary.keys.sorted()
 //        searchFriend = keys.map{ Search(letter: $0, names: groupedDictionary[$0]!.sorted()) }
 
+//        do {
+//                   let realm = try Realm()
+//                   print(realm.configuration.fileURL ?? "Нет данных в БД")
+//                   let friendsLetters = Array (Set (realm.objects(FriendsVK.self).compactMap{$0.name.first?.lowercased()})).sorted()
+//                   searchMassive = friendsLetters.map {realm.objects(FriendsVK.self).filter("name contains '\(searchText)'", $0)}
+//                   token.removeAll()
+//                   searchMassive.enumerated().forEach {observeChangesFriends(section: $0.offset, results: $0.element)}
+//                   tableView.reloadData()
+//               }catch {
+//                   print(error.localizedDescription)
+//               }
+       
+        
 
         print(searchMassive)
         tableView.reloadData()
